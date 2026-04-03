@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2065 Capital</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;height:100%;}
+body{
+  font-family:'Inter',sans-serif;
+  background:#050a14;
+  color:#e8eef8;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+:root{
+  --bg:#050a14;
+  --blue:#2a5fd4;
+  --blue-bright:#4a7fd4;
+  --blue-dim:rgba(42,95,212,0.15);
+  --line:rgba(42,95,212,0.2);
+  --line-bright:rgba(42,95,212,0.5);
+  --mono:'DM Mono',monospace;
+  --serif:'Playfair Display',serif;
+  --text:rgba(232,238,248,0.85);
+  --muted:rgba(232,238,248,0.35);
+}
+
+/* ── SCANLINE OVERLAY ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:1000;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ── CURSOR GLOW ── */
+.cursor-glow{
+  position:fixed;width:300px;height:300px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(42,95,212,0.06) 0%,transparent 70%);
+  pointer-events:none;z-index:2;
+  transform:translate(-50%,-50%);
+  transition:transform 0.1s;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;
+  width:72px;z-index:50;
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:32px 0;
+  background:rgba(5,10,20,0.95);
+}
+.sidebar-logo{
+  width:44px;height:60px;cursor:pointer;margin-bottom:48px;
+}
+.sidebar-logo img{width:100%;height:100%;object-fit:contain;filter:invert(1);opacity:0.9;}
+
+.sidebar-nav{
+  display:flex;flex-direction:column;gap:32px;align-items:center;flex:1;justify-content:center;
+}
+.sidebar-nav a{
+  font-family:var(--mono);font-size:8px;font-weight:400;
+  color:var(--muted);letter-spacing:1px;
+  text-decoration:none;
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  transform:rotate(180deg);
+  transition:color 0.2s;
+}
+.sidebar-nav a:hover,.sidebar-nav a.active{color:var(--blue-bright);}
+
+.sidebar-index{
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+  letter-spacing:1px;margin-top:auto;padding-bottom:8px;
+}
+
+/* ── HAMBURGER (mobile) ── */
+.mob-header{
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(5,10,20,0.97);
+  border-bottom:1px solid var(--line);
+  padding:0 20px;height:72px;
+  align-items:center;justify-content:space-between;
+}
+.mob-logo{width:36px;height:48px;}
+.mob-logo img{width:100%;height:100%;object-fit:contain;filter:invert(1);opacity:0.9;}
+.hamburger{display:flex;flex-direction:column;gap:5px;cursor:crosshair;padding:6px;}
+.hamburger span{display:block;width:22px;height:1px;background:#e8eef8;transition:all 0.3s;}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(4px,4px);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px);}
+
+.mobile-nav{
+  display:none;position:fixed;inset:0;top:72px;z-index:99;
+  background:#050a14;
+  flex-direction:column;align-items:flex-start;
+  justify-content:center;padding:0 32px;gap:0;
+}
+.mobile-nav.open{display:flex;}
+.mobile-nav a{
+  text-decoration:none;color:rgba(232,238,248,0.7);
+  font-size:28px;font-weight:200;letter-spacing:1px;
+  padding:20px 0;width:100%;
+  border-bottom:1px solid var(--line);
+  transition:color 0.2s,padding-left 0.25s;
+  cursor:crosshair;
+}
+.mobile-nav a:hover{color:#fff;padding-left:16px;}
+.mobile-nav a:first-of-type{border-top:1px solid var(--line);}
+
+/* ── MAIN CONTENT ── */
+main{margin-left:72px;}
+
+/* ── SECTIONS ── */
+section,.dark-section{
+  min-height:100vh;
+  padding:100px 80px 80px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+  display:flex;flex-direction:column;justify-content:center;
+}
+
+/* ── HOME ── */
+#home{
+  padding:0 80px 0 100px;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.home-top{
+  font-family:var(--mono);font-size:9px;font-weight:300;
+  letter-spacing:4px;color:var(--muted);text-transform:uppercase;
+  margin-bottom:60px;
+  display:flex;align-items:center;gap:20px;
+}
+.home-top::before{
+  content:'';width:24px;height:1px;background:var(--blue-bright);
+}
+
+.tagline-wheel{position:relative;min-height:280px;max-width:900px;margin-bottom:60px;}
+.tagline{
+  position:absolute;top:0;left:0;
+  font-family:var(--serif);
+  font-size:clamp(40px,5.5vw,80px);
+  font-weight:400;font-style:italic;
+  color:#fff;
+  line-height:1.2;opacity:0;
+  transition:opacity 1.4s ease;
+  pointer-events:none;letter-spacing:-0.5px;
+}
+.tagline.visible{opacity:1;}
+
+.home-data{
+  display:flex;gap:64px;align-items:flex-start;
+}
+.data-item{}
+.data-num{
+  font-family:var(--mono);font-size:32px;font-weight:300;
+  color:var(--blue-bright);letter-spacing:-1px;line-height:1;
+  margin-bottom:8px;
+}
+.data-label{
+  font-family:var(--mono);font-size:8px;font-weight:300;
+  color:var(--muted);letter-spacing:2px;text-transform:uppercase;
+}
+
+/* Capital stack animation */
+.cap-stack{
+  position:absolute;right:80px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:3px;
+  width:180px;
+}
+.stack-bar{
+  height:10px;border-radius:1px;position:relative;
+  display:flex;align-items:center;
+}
+.stack-bar .bar-fill{
+  height:100%;border-radius:1px;
+  animation:fillBar 1.5s ease forwards;
+  transform-origin:left;
+}
+.stack-bar:nth-child(1) .bar-fill{background:rgba(42,95,212,0.7);animation-delay:0.2s;}
+.stack-bar:nth-child(2) .bar-fill{background:rgba(42,95,212,0.5);animation-delay:0.5s;width:78%;}
+.stack-bar:nth-child(3) .bar-fill{background:rgba(42,95,212,0.3);animation-delay:0.8s;width:55%;}
+.stack-bar:nth-child(4) .bar-fill{background:rgba(42,95,212,0.15);animation-delay:1.1s;width:35%;}
+@keyframes fillBar{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+.stack-label{
+  font-family:var(--mono);font-size:7px;color:var(--muted);
+  letter-spacing:1px;text-transform:uppercase;
+  position:absolute;left:calc(100% + 10px);white-space:nowrap;
+}
+.stack-bar:nth-child(2) .stack-label{color:var(--blue-bright);}
+.stack-bar:nth-child(2)::after{
+  content:'← 2065';
+  position:absolute;right:calc(100% + 10px);
+  font-family:var(--mono);font-size:7px;
+  color:var(--blue-bright);letter-spacing:1px;white-space:nowrap;
+}
+
+.home-counter{
+  font-family:var(--mono);font-size:9px;font-weight:300;
+  letter-spacing:3px;color:var(--muted);
+  position:absolute;bottom:48px;left:100px;
+}
+
+/* ── ABOUT ── */
+#about{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0 80px;align-items:center;
+  padding:120px 80px;
+}
+.about-left .eyebrow{
+  font-family:var(--mono);font-size:9px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--blue-bright);
+  margin-bottom:40px;display:block;opacity:0.7;
+}
+.about-pull{
+  font-family:var(--serif);
+  font-size:clamp(32px,3.5vw,52px);
+  font-style:italic;font-weight:400;
+  color:#fff;line-height:1.3;
+  margin-bottom:48px;
+}
+.about-quote{
+  font-family:var(--mono);font-size:11px;font-weight:300;
+  color:var(--muted);letter-spacing:1px;line-height:1.9;
+  border-left:1px solid var(--blue-bright);
+  padding-left:20px;
+}
+.about-right p{
+  font-size:16px;font-weight:300;line-height:2;
+  color:var(--text);
+}
+.about-stat{
+  margin-top:48px;padding-top:48px;
+  border-top:1px solid var(--line);
+  display:flex;gap:48px;
+}
+
+/* ── STRATEGIES ── */
+#strategies{padding:120px 0;justify-content:flex-start;}
+.strat-eyebrow{
+  font-family:var(--mono);font-size:9px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--blue-bright);
+  opacity:0.7;margin-bottom:64px;padding:0 80px;display:block;
+}
+.s-item{
+  border-top:1px solid var(--line);
+  position:relative;
+  transition:background 0.4s;
+  cursor:crosshair;
+}
+.s-item:last-child{border-bottom:1px solid var(--line);}
+.s-item:hover{background:rgba(42,95,212,0.04);}
+.s-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:36px 80px;user-select:none;
+}
+.s-left{display:flex;align-items:center;gap:32px;}
+.s-n{
+  font-family:var(--mono);font-size:9px;font-weight:300;
+  color:var(--blue-bright);letter-spacing:1px;opacity:0.6;
+}
+.s-head h3{
+  font-size:clamp(18px,2vw,26px);font-weight:300;
+  color:#fff;letter-spacing:-0.2px;
+  transition:color 0.2s;
+}
+.s-item:hover .s-head h3{color:var(--blue-bright);}
+.s-toggle{
+  font-family:var(--mono);font-size:20px;font-weight:200;
+  color:var(--blue-bright);opacity:0.6;
+  transition:transform 0.35s,opacity 0.2s;flex-shrink:0;
+}
+.s-toggle.open{transform:rotate(45deg);opacity:1;}
+.s-body{
+  max-height:0;overflow:hidden;
+  transition:max-height 0.5s ease,padding 0.3s;
+  font-size:15px;font-weight:300;
+  color:var(--muted);line-height:1.9;
+}
+.s-body.open{max-height:200px;padding:0 80px 40px calc(80px + 32px + 2ch + 32px);}
+
+/* ── DARK QUOTE ── */
+.quote-section{
+  min-height:60vh;
+  background:linear-gradient(135deg,#0a1628,#050a14);
+  display:flex;align-items:center;justify-content:center;
+  padding:100px 160px;text-align:center;
+  border-bottom:1px solid var(--line);
+  position:relative;overflow:hidden;
+}
+.quote-section::before{
+  content:'2065';
+  position:absolute;
+  font-family:'Inter',sans-serif;
+  font-size:280px;font-weight:700;
+  color:rgba(42,95,212,0.04);
+  letter-spacing:-15px;line-height:1;
+  pointer-events:none;
+  user-select:none;
+}
+.quote-text{
+  font-family:var(--serif);
+  font-size:clamp(22px,3vw,40px);
+  font-style:italic;font-weight:400;
+  color:rgba(255,255,255,0.9);
+  line-height:1.6;position:relative;z-index:1;
+}
+.quote-text em{font-style:normal;color:var(--blue-bright);}
+
+/* ── TEAM ── */
+#team{padding:120px 80px;justify-content:flex-start;}
+.section-eyebrow{
+  font-family:var(--mono);font-size:9px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--blue-bright);
+  opacity:0.7;margin-bottom:72px;display:block;
+}
+.p-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0 32px;}
+.p-card{display:flex;flex-direction:column;gap:20px;}
+.p-img{
+  width:100%;aspect-ratio:2/3;
+  background:linear-gradient(160deg,#0d1f3c,#071428);
+  border:1px solid var(--line);
+  display:flex;align-items:flex-end;
+  padding:16px;
+  font-family:var(--mono);font-size:8px;
+  color:rgba(42,95,212,0.5);letter-spacing:1px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.3s;
+}
+.p-img::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,rgba(5,10,20,0.8));
+}
+.p-card:hover .p-img{border-color:var(--blue-bright);}
+.p-card h3{font-size:15px;font-weight:400;color:#fff;margin-bottom:4px;}
+.p-card p{font-family:var(--mono);font-size:8px;color:var(--blue-bright);letter-spacing:2px;text-transform:uppercase;opacity:0.7;}
+
+/* ── BOARD ── */
+#board{padding:120px 80px;justify-content:flex-start;background:rgba(10,22,44,0.5);}
+.b-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:48px 32px;}
+
+/* ── CONTACT ── */
+#contact{padding:120px 80px 80px;justify-content:flex-start;min-height:auto;}
+.c-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0 40px;}
+.c-block h3{
+  font-family:var(--mono);font-size:8px;font-weight:400;
+  text-transform:uppercase;letter-spacing:2.5px;
+  color:var(--blue-bright);opacity:0.6;margin-bottom:16px;
+}
+.c-block p,.c-block a{
+  font-size:15px;font-weight:300;color:var(--text);
+  text-decoration:none;line-height:1.7;display:block;
+  transition:color 0.2s;
+}
+.c-block a:hover{color:#fff;}
+
+/* ── FOOTER ── */
+footer{
+  margin-left:0;
+  border-top:1px solid var(--line);
+  padding:20px 80px 20px 152px;
+  display:flex;justify-content:space-between;align-items:center;
+  background:#050a14;
+}
+.f-copy{font-family:var(--mono);font-size:9px;font-weight:300;color:var(--muted);letter-spacing:1px;}
+.f-logo{width:36px;height:48px;cursor:crosshair;}
+.f-logo img{width:100%;height:100%;object-fit:contain;filter:invert(1);opacity:0.6;}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.9s ease,transform 0.9s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:0.1s;}
+.reveal-delay-2{transition-delay:0.2s;}
+.reveal-delay-3{transition-delay:0.3s;}
+.reveal-delay-4{transition-delay:0.4s;}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .mob-header{display:flex;}
+  main{margin-left:0;}
+  section,.dark-section,.quote-section{padding:100px 24px 60px;}
+  #home{padding:100px 24px 60px;}
+  .cap-stack{display:none;}
+  .home-top{margin-bottom:40px;}
+  .tagline{font-size:clamp(32px,9vw,48px);}
+  .tagline-wheel{min-height:300px;}
+  .home-data{gap:32px;flex-wrap:wrap;}
+  .data-num{font-size:24px;}
+  .home-counter{left:24px;bottom:32px;}
+  #about{grid-template-columns:1fr;gap:48px;padding:80px 24px;}
+  .about-stat{gap:32px;}
+  #strategies{padding:80px 0;}
+  .strat-eyebrow{padding:0 24px;margin-bottom:40px;}
+  .s-head{padding:24px 24px;}
+  .s-body.open{padding:0 24px 28px 24px;}
+  .quote-section{padding:80px 24px;min-height:40vh;}
+  .quote-section::before{font-size:120px;}
+  #team,#board,#contact{padding:80px 24px;}
+  .p-grid{grid-template-columns:1fr 1fr;gap:24px 16px;}
+  .b-grid{grid-template-columns:1fr 1fr;gap:24px 16px;}
+  .c-grid{grid-template-columns:1fr 1fr;gap:32px 16px;}
+  footer{padding:16px 24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo" onclick="scrollTo({top:0,behavior:'smooth'})">
+    <img src="2065 Capital Logo_RGB.png" alt="2065 Capital">
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#home" class="active">Home</a>
+    <a href="#about">About</a>
+    <a href="#strategies">Strategies</a>
+    <a href="#team">Team</a>
+    <a href="#board">Board</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="sidebar-index" id="sidebarIdx">01</div>
+</aside>
+
+<!-- MOBILE HEADER -->
+<div class="mob-header">
+  <div class="mob-logo"><img src="2065 Capital Logo_RGB.png" alt="2065 Capital"></div>
+  <div class="hamburger" id="ham" onclick="toggleMob()"><span></span><span></span><span></span></div>
+</div>
+<div class="mobile-nav" id="mobileNav">
+  <a href="#home" onclick="closeMob()">Home</a>
+  <a href="#about" onclick="closeMob()">About Us</a>
+  <a href="#strategies" onclick="closeMob()">Strategies</a>
+  <a href="#team" onclick="closeMob()">Team</a>
+  <a href="#board" onclick="closeMob()">Board of Directors</a>
+  <a href="#contact" onclick="closeMob()">Contact Us</a>
+</div>
+
+<main>
+
+<!-- HOME -->
+<section id="home">
+  <div class="home-top reveal">Long-Duration Structured Capital Solutions</div>
+  <div class="tagline-wheel reveal reveal-delay-1">
+    <div class="tagline visible">We go where conventional debt and equity cannot.</div>
+    <div class="tagline">Alignment and mutual trust support durable results in complex structures.</div>
+    <div class="tagline">Our capabilities are sophisticated, but our philosophy is simple: long-term success requires long-term partnerships.</div>
+  </div>
+  <div class="home-counter" id="ctr">01 / 03</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-left reveal">
+    <span class="eyebrow">About Us</span>
+    <div class="about-pull">Investing in dislocation.</div>
+    <div class="about-stat">
+      <div class="data-item"><div class="data-num" id="countYears" style="font-size:24px;">0</div><div class="data-label">Year Track Record</div></div>
+      <div class="data-item"><div class="data-num" id="countHorizon" style="font-size:24px;">0</div><div class="data-label">Year Horizon</div></div>
+      <div class="data-item"><div class="data-num" style="font-size:24px;">2025</div><div class="data-label">Est. Chicago</div></div>
+    </div>
+  </div>
+  <div class="about-right reveal reveal-delay-1">
+    <p>2065 Capital provides long-duration, flexible capital in between traditional debt and common equity. With a 12-year track record within The Pritzker Organization, the firm was established as a separate business in 2025 to continue managing its existing portfolio and to support growth. The firm pursues a hybrid strategy across industries and asset classes, partnering with management teams and sponsors to structure durable, aligned investments designed to compound after-tax value over a generational horizon.</p>
+  </div>
+</section>
+
+<!-- STRATEGIES -->
+<section id="strategies">
+  <span class="strat-eyebrow reveal">Strategies</span>
+  <div class="s-list">
+    <div class="s-item reveal">
+      <div class="s-head" onclick="toggleS(this)">
+        <div class="s-left"><span class="s-n">01</span><h3>Preferred Equity</h3></div>
+        <span class="s-toggle">+</span>
+      </div>
+      <div class="s-body">Businesses where we have high conviction on baseline performance and a significant margin of error in our underwriting due to structure and pricing.</div>
+    </div>
+    <div class="s-item reveal reveal-delay-1">
+      <div class="s-head" onclick="toggleS(this)">
+        <div class="s-left"><span class="s-n">02</span><h3>Insurance Strategies</h3></div>
+        <span class="s-toggle">+</span>
+      </div>
+      <div class="s-body">High quality credit portfolios with reinsurance float providing cheap long duration financing.</div>
+    </div>
+    <div class="s-item reveal reveal-delay-2">
+      <div class="s-head" onclick="toggleS(this)">
+        <div class="s-left"><span class="s-n">03</span><h3>Leveraged Vehicles</h3></div>
+        <span class="s-toggle">+</span>
+      </div>
+      <div class="s-body">High quality underlying credit exposures with attractive sources of cheap long duration leverage.</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-section reveal">
+  <div class="quote-text">
+    2065, born in 2025, reflects a generational horizon — an ambition to <em>compound after-tax value</em> over the next 40 years.
+  </div>
+</div>
+
+<!-- TEAM -->
+<section id="team">
+  <span class="section-eyebrow reveal">Team</span>
+  <div class="p-grid">
+    <div class="p-card reveal"><div class="p-img">Photo</div><div><h3>Jason Sussman</h3><p>CEO</p></div></div>
+    <div class="p-card reveal reveal-delay-1"><div class="p-img">Photo</div><div><h3>Heather Ryan</h3><p>Chief of Staff</p></div></div>
+    <div class="p-card reveal reveal-delay-2"><div class="p-img">Photo</div><div><h3>Nick Peluchiwski</h3><p>Associate</p></div></div>
+    <div class="p-card reveal reveal-delay-3"><div class="p-img">Photo</div><div><h3>Jay Metzger</h3><p>Analyst</p></div></div>
+  </div>
+</section>
+
+<!-- BOARD -->
+<section id="board">
+  <span class="section-eyebrow reveal">Board of Directors</span>
+  <div class="b-grid">
+    <div class="p-card reveal"><div class="p-img">Photo</div><div><h3>Name</h3><p>Title</p></div></div>
+    <div class="p-card reveal reveal-delay-1"><div class="p-img">Photo</div><div><h3>Name</h3><p>Title</p></div></div>
+    <div class="p-card reveal reveal-delay-2"><div class="p-img">Photo</div><div><h3>Name</h3><p>Title</p></div></div>
+    <div class="p-card reveal reveal-delay-1"><div class="p-img">Photo</div><div><h3>Name</h3><p>Title</p></div></div>
+    <div class="p-card reveal reveal-delay-2"><div class="p-img">Photo</div><div><h3>Name</h3><p>Title</p></div></div>
+    <div class="p-card reveal reveal-delay-3"><div class="p-img">Photo</div><div><h3>Name</h3><p>Title</p></div></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <span class="section-eyebrow reveal">Contact Us</span>
+  <div class="c-grid">
+    <div class="c-block reveal"><h3>Email</h3><a href="mailto:info@2065capital.com">info@2065capital.com</a></div>
+    <div class="c-block reveal reveal-delay-1"><h3>Phone</h3><p>+1 (000) 000-0000</p></div>
+    <div class="c-block reveal reveal-delay-2"><h3>Office</h3><p>150 N. Riverside Plaza<br>Suite 3200<br>Chicago, IL 60606</p></div>
+    <div class="c-block reveal reveal-delay-3"><h3>LinkedIn</h3><a href="https://www.linkedin.com/company/2065capital" target="_blank">2065 Capital</a></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span class="f-copy">© 2026 2065 Capital Management — All Rights Reserved</span>
+  <div class="f-logo" onclick="scrollTo({top:0,behavior:'smooth'})">
+    <img src="2065 Capital Logo_RGB.png" alt="2065 Capital">
+  </div>
+</footer>
+
+<script>
+window.addEventListener('load', function(){
+
+  // Cursor glow
+  var glow = document.getElementById('cursorGlow');
+  document.addEventListener('mousemove', function(e){
+    if(glow) { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; }
+  });
+
+  function countUp(el, target, duration){
+    if(!el) return;
+    var start = 0, step = target / (duration / 16);
+    var timer = setInterval(function(){
+      start += step;
+      if(start >= target){ start = target; clearInterval(timer); }
+      el.textContent = Math.floor(start);
+    }, 16);
+  }
+
+  // Count up — triggers when about section is visible
+  var counted = false;
+  var aboutObs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting && !counted){
+        counted = true;
+        countUp(document.getElementById('countYears'), 12, 1200);
+        countUp(document.getElementById('countHorizon'), 40, 1600);
+      }
+    });
+  },{threshold:0.3});
+  var aboutSec = document.getElementById('about');
+  if(aboutSec) aboutObs.observe(aboutSec);
+
+  // Reveal on scroll — fires every time
+  var reveals = document.querySelectorAll('.reveal');
+  var ro = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting) e.target.classList.add('visible');
+      else e.target.classList.remove('visible');
+    });
+  },{threshold:0.12});
+  reveals.forEach(function(el){ ro.observe(el); });
+
+  // Active sidebar nav
+  var secs = document.querySelectorAll('section[id]');
+  var sideLinks = document.querySelectorAll('.sidebar-nav a');
+  var idx = document.getElementById('sidebarIdx');
+  var idxMap = {home:'01',about:'02',strategies:'03',team:'04',board:'05',contact:'06'};
+  var so = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        sideLinks.forEach(function(a){ a.classList.remove('active'); });
+        var a = document.querySelector('.sidebar-nav a[href="#'+e.target.id+'"]');
+        if(a) a.classList.add('active');
+        if(idx && idxMap[e.target.id]) idx.textContent = idxMap[e.target.id];
+      }
+    });
+  },{threshold:0.3});
+  secs.forEach(function(s){ so.observe(s); });
+
+  // Tagline
+  var tags = document.querySelectorAll('.tagline');
+  var ctr = document.getElementById('ctr');
+  var lbl = ['01 / 03','02 / 03','03 / 03'];
+  var c = 0;
+  setInterval(function(){
+    tags[c].classList.remove('visible');
+    c = (c+1) % tags.length;
+    tags[c].classList.add('visible');
+    if(ctr) ctr.textContent = lbl[c];
+  }, 4200);
+
+  // Strategy accordion
+  window.toggleS = function(h){
+    var b = h.nextElementSibling, t = h.querySelector('.s-toggle');
+    var open = b.classList.contains('open');
+    document.querySelectorAll('.s-body').forEach(function(x){ x.classList.remove('open'); });
+    document.querySelectorAll('.s-toggle').forEach(function(x){ x.classList.remove('open'); });
+    if(!open){ b.classList.add('open'); t.classList.add('open'); }
+  };
+
+  // Mobile
+  window.toggleMob = function(){
+    document.getElementById('mobileNav').classList.toggle('open');
+    document.getElementById('ham').classList.toggle('open');
+  };
+  window.closeMob = function(){
+    var mn = document.getElementById('mobileNav'), h = document.getElementById('ham');
+    if(mn) mn.classList.remove('open');
+    if(h) h.classList.remove('open');
+  };
+
+});
+</script>
+</body>
+</html>

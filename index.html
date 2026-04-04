@@ -11,14 +11,14 @@
 html{scroll-behavior:smooth;}
 body{
   font-family:'Inter',sans-serif;
-  background:#eef1f7;
+  background:#ffffff;
   color:#0c1a3a;
   overflow-x:hidden;
 }
 
 :root{
-–bg:#eef1f7;
-–bg2:#e6eaf2;
+–bg:#ffffff;
+–bg2:#f2f4f9;
 –ink:#0c1a3a;
 –ink-mid:rgba(12,26,58,0.45);
 –blue:#1a3a8f;
@@ -31,7 +31,7 @@ body{
 /* ── HEADER ── */
 header{
 position:fixed;top:0;left:0;right:0;z-index:100;
-background:rgba(238,241,247,0.97);
+background:rgba(255,255,255,0.97);
 backdrop-filter:blur(20px);
 border-bottom:1px solid var(–line);
 padding:0 60px;
@@ -39,10 +39,29 @@ height:96px;
 display:flex;align-items:center;justify-content:space-between;
 }
 .logo-box{height:80px;width:58px;cursor:pointer;flex-shrink:0;}
-.logo-box img{
-width:100%;height:100%;object-fit:contain;
-mix-blend-mode:multiply;
-filter:saturate(1.2) brightness(0.75);
+.logo-box img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;filter:saturate(1.2) brightness(0.75);}
+
+@media(max-width:768px){
+.logo-box img{display:none;}
+.logo-css{
+display:flex;
+flex-direction:column;
+justify-content:flex-end;
+width:44px;height:56px;
+border:2px solid #1a3a8f;
+padding:4px 5px 5px;
+cursor:pointer;
+}
+.logo-css span:first-child{
+font-family:‘Inter’,sans-serif;
+font-size:11px;font-weight:700;
+color:#1a3a8f;line-height:1.2;display:block;
+}
+.logo-css span:last-child{
+font-family:‘Inter’,sans-serif;
+font-size:8px;font-weight:700;
+color:#1a3a8f;letter-spacing:1px;display:block;line-height:1.2;
+}
 }
 
 nav ul{list-style:none;display:flex;}
